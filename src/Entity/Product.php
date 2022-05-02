@@ -31,9 +31,10 @@ class Product
     #[ORM\Column]
     public array $keyWords = [];
 
-    /** @var Category */
-    #[ORM\ManyToOne(inversedBy: 'products')]
-    public Category $category;
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $category;
+
 
     /**
      * @return string
@@ -99,24 +100,20 @@ class Product
         $this->keyWords = $keyWords;
     }
 
-    /**
-     * @return Category
-     */
-    public function getCategory(): Category
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getCategory(): ?Category
     {
         return $this->category;
     }
 
-    /**
-     * @param Category $category
-     */
-    public function setCategory(Category $category): void
+    public function setCategory(?Category $category): self
     {
         $this->category = $category;
-    }
 
-    public function getId(): ?int
-    {
-        return $this->id;
+        return $this;
     }
 }

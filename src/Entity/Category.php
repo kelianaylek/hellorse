@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /** A review of a book. */
@@ -19,9 +20,8 @@ class Category
     #[ORM\Column]
     public string $name = '';
 
-    /** @var ArrayCollection|Product */
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class, cascade: ['persist', 'remove'])]
-    public ArrayCollection|Product $products;
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class, orphanRemoval: true)]
+    private $products;
 
     public function __construct()
     {
@@ -44,24 +44,39 @@ class Category
         $this->name = $name;
     }
 
-    /**
-     * @return Product|ArrayCollection
-     */
-    public function getProducts(): ArrayCollection|Product
-    {
-        return $this->products;
-    }
-
-    /**
-     * @param Product|ArrayCollection $products
-     */
-    public function setProducts(ArrayCollection|Product $products): void
-    {
-        $this->products = $products;
-    }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): self
+    {
+        if (!$this->products->contains($product)) {
+            $this->products[] = $product;
+            $product->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): self
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getCategory() === $this) {
+                $product->setCategory(null);
+            }
+        }
+
+        return $this;
     }
 }
