@@ -8,7 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
 
 /** A product. */
 #[ORM\Entity]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+    'GET'
+],
+    itemOperations: [
+        'GET'
+    ]
+)]
 class Product
 {
     /** The id of this product. */
@@ -34,7 +41,6 @@ class Product
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
     #[ORM\JoinColumn(nullable: false)]
     private $category;
-
 
     /**
      * @return string

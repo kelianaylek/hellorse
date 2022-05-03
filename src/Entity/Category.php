@@ -9,7 +9,14 @@ use Doctrine\ORM\Mapping as ORM;
 
 /** A review of a book. */
 #[ORM\Entity]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+    'GET'
+],
+    itemOperations: [
+        'GET'
+    ]
+)]
 class Category
 {
     /** The id of this category. */
