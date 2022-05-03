@@ -5,6 +5,12 @@
 {% block body %}
     <h1>Product index</h1>
 
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <a href="{{ path('app_logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ path('login') }}">Login</a>
+    {% endif %}
+
     <table class="table">
         <thead>
             <tr>
@@ -31,7 +37,9 @@
                     {% endfor %}</td>
                 <td>
                     <a href="{{ path('app_product_show', {'id': product.id}) }}">show</a>
-                    <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
+                    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}
@@ -42,5 +50,7 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_product_new') }}">Create new</a>
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <a href="{{ path('app_product_new') }}">Create new</a>
+    {% endif %}
 {% endblock %}
