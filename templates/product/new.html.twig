@@ -7,7 +7,7 @@
 
     {{ form_start(form) }}
 
-    <button type="button" class="add_item_link" data-collection-holder-class="keyWords">Add a word</button>
+    <button type="button" class="add_item_link btn btn-primary" data-collection-holder-class="keyWords">Add a word</button>
 
     <ul class="keyWords"
         data-index="{{ form.keyWords|length > 0 ? form.keyWords|last.vars.name + 1 : 0 }}"
@@ -18,11 +18,11 @@
         {% endfor %}
     </ul>
 
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <button class="btn btn-primary position-absolute top-0 end-0 m-5">{{ button_label|default('Save') }}</button>
 
     {{ form_end(form) }}
 
-    <a href="{{ path('app_product_index') }}">back to list</a>
+    <a class="btn btn-link" href="{{ path('app_product_index') }}">back to list</a>
 
     <script>
         $( document ).ready(function(){
@@ -63,7 +63,7 @@
             const addTagFormDeleteLink = (item) => {
                 const removeFormButton = document.createElement('button');
                 removeFormButton.innerText = 'Delete this word';
-
+                removeFormButton.classList.add("btn-danger")
                 item.append(removeFormButton);
 
                 removeFormButton.addEventListener('click', (e) => {

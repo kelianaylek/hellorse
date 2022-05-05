@@ -6,10 +6,15 @@
     <h1>Product index</h1>
 
     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-        <a class="btn btn-link" href="{{ path('app_logout') }}">Logout</a>
+        <a class="btn btn-link position-absolute top-0 end-0" href="{{ path('app_logout') }}">Logout</a>
     {% else %}
-        <a class="btn btn-link" href="{{ path('login') }}">Login</a>
+        <a class="position-absolute top-0 end-0 btn btn-link" href="{{ path('login') }}">Login</a>
     {% endif %}
+
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <a class="btn btn-link" href="{{ path('app_product_new') }}">Create new</a>
+    {% endif %}
+
 
     <h2>Change categories</h2>
 
@@ -20,7 +25,7 @@
         <input type="radio" name="filter" value="Chaussures">
         <label id="tshirts" for="tshirts">T-shirts</label>
         <input type="radio" name="filter" value="T-shirts">
-        <button type="submit">Trier</button>
+        <button class="btn btn-primary" type="submit">Trier</button>
     </form>
     <br><br>
 
@@ -50,7 +55,7 @@
                 <td>
                     <a class="btn btn-primary" href="{{ path('app_product_show', {'id': product.id}) }}">show</a>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
+                        <a class="btn btn-warning" href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
                     {% endif %}
                 </td>
             </tr>
@@ -63,20 +68,22 @@
         </tbody>
     </table>
 
-    <br><br>
-    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-        <a href="{{ path('app_product_new') }}">Create new</a>
-    {% endif %}
-
+    <div id="spinner"></div>
 
     <script>
         $( document ).ready(function() {
             $(document).on('submit', '#filter', function (e) {
                 e.preventDefault()
+
                 $filterOn = $('input[name="filter"]:checked').val()
                 if($filterOn === 'none'){
                     document.location.reload()
                 }
+
+                $("#spinner").append(
+                    '<div class="spinner-border text-primary position-absolute top-50 start-50 " role="status"><span class="visually-hidden">Loading...</span></div>'
+                )
+
                 $this = $(this);
                 $.ajax({
                     type: 'GET',
@@ -87,6 +94,8 @@
                         for ($i = 0; $i < categories.length; $i++){
                             if($filterOn === categories[$i].name){
                                 $products= []
+                                $("#body").empty()
+
                                 $("#filterSize").empty()
                                 $("#research").empty()
                                 for($k = 0; $k < categories[$i].products.length; $k++){
@@ -97,25 +106,22 @@
                                         data: {},
                                         success: function(product) {
                                             $products.push(product)
-                                            $("#body").empty()
 
-                                            for($l = 0; $l < $products.length; $l++){
-                                                $("#body").append(
-                                                    '<tr>' +
-                                                        '<td>' + $products[$l].id + '</td>' +
-                                                        '<td>' + $products[$l].name + '</td>' +
-                                                        '<td>' + $products[$l].description + '</td>' +
-                                                        '<td>' + $products[$l].size + '</td>' +
-                                                        '<td>' +
-                                                            '<a href=' + $products[$l].id + '>show</a>' +
-                                                        '</td>' +
-                                                    '</tr>'
-                                                )
-                                            }
+                                            $("#body").append(
+                                                '<tr>' +
+                                                    '<td>' + product.id + '</td>' +
+                                                    '<td>' + product.name + '</td>' +
+                                                    '<td>' + product.description + '</td>' +
+                                                    '<td>' + product.size + '</td>' +
+                                                    '<td>' +
+                                                        '<a class="btn btn-primary" href=' + product.id + '>show</a>' +
+                                                    '</td>' +
+                                                '</tr>'
+                                            )
                                             localStorage.setItem('products', JSON.stringify($products));
-
                                         }
                                     })
+
                                 }
                                 if($filterOn === 'T-shirts'){
                                     $("#filterSize").append(
@@ -127,7 +133,7 @@
                                         '       <option value="L">L</option>' +
                                         '       <option value="XL">XL</option>' +
                                         '   </select>' +
-                                        '<button type="submit">Trier</button>'
+                                        '<button class="btn btn-primary" type="submit">Trier</button>'
                                     )
                                 } else if($filterOn === 'Chaussures'){
                                     $("#filterSize").append(
@@ -143,17 +149,20 @@
                                         '       <option value="45">45</option>' +
                                         '       <option value="46">46</option>' +
                                         '   </select>' +
-                                        '<button type="submit">Trier</button>'
+                                        '<button class="btn btn-primary" type="submit">Trier</button>'
                                     )
                                 }
                                 $("#research").append(
-                                    '<label for="research">Search</label>' +
+                                    '<label for="research">Search key words</label>' +
                                     '<input type="text" name="research"/>' +
-                                    '<button type="submit">Search</button>'
+                                    '<button class="btn btn-primary" type="submit">Search</button>'
                                 )
+
+                                $("#spinner").empty()
+
                             }
                         }
-                    }
+                    },
                 });
             });
             $(document).on('submit', '#filterSize', function(e){
@@ -172,7 +181,7 @@
                             '<td>' + $products[$i].description + '</td>' +
                             '<td>' + $products[$i].size + '</td>' +
                             '<td>' +
-                            '<a href=' + $products[$i].id + '>show</a>' +
+                            '<a class="btn btn-primary" href=' + $products[$i].id + '>show</a>' +
                             '</td>' +
                             '</tr>'
                         )
@@ -195,7 +204,7 @@
                                 '<td>' + $products[$i].description + '</td>' +
                                 '<td>' + $products[$i].size + '</td>' +
                                 '<td>' +
-                                '<a href=' + $products[$i].id + '>show</a>' +
+                                '<a class="btn btn-primary" href=' + $products[$i].id + '>show</a>' +
                                 '</td>' +
                                 '</tr>'
                             )
