@@ -34,13 +34,16 @@ class AppFixtures extends Fixture
             $product = new Product();
             $product->setName('product '.$i);
             $product->setDescription('product desc '.$i);
-            $product->setSize('size');
-            $product->setKeyWords(['mot 1', 'mot 2', 'mot 3']);
+            $product->setKeyWords(['wordProduct' .$i ]);
 
             if((random_int(0,1)) === 0){
                 $tShirtCategory->addProduct($product);
+                $sizes = ['XS', 'S', 'M',' L', 'XL'];
+                $product->setSize($sizes[array_rand($sizes)]);
             }else{
                 $shoeCategory->addProduct($product);
+                $sizes = ['38', '39', '40',' 41', '42', '43', '44', '45', '46'];
+                $product->setSize($sizes[array_rand($sizes)]);
             }
 
             $manager->persist($product);
