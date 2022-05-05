@@ -5,7 +5,98 @@
 {% block body %}
     <h1>Create new Product</h1>
 
-    {{ include('product/_form.html.twig') }}
+    {{ form_start(form) }}
+
+    <button type="button" class="add_item_link" data-collection-holder-class="keyWords">Add a word</button>
+
+    <ul class="keyWords"
+        data-index="{{ form.keyWords|length > 0 ? form.keyWords|last.vars.name + 1 : 0 }}"
+        data-prototype="{{ form_widget(form.keyWords.vars.prototype)|e('html_attr') }}"
+    >
+        {% for keyWord in form.keyWords %}
+            <li>{{ form_row(keyWord) }}</li>
+        {% endfor %}
+    </ul>
+
+    <button class="btn">{{ button_label|default('Save') }}</button>
+
+    {{ form_end(form) }}
 
     <a href="{{ path('app_product_index') }}">back to list</a>
+
+    <script>
+        $( document ).ready(function(){
+            $sizes = $("#product_size")
+            $sizes.empty()
+            $sizes.append(
+                '<option value selected="selected">Choose a category first</option>'
+            )
+
+            $('#product_category').on('change', function (e) {
+                $category = $("#product_category option:selected").html();
+                console.log($category)
+                $sizes.empty()
+                if($category === "Chaussures"){
+                    $sizes.append(
+                        '<option value="38">38</option>' +
+                        '<option value="39">39</option>' +
+                        '<option value="40">40</option>' +
+                        '<option value="41">41</option>' +
+                        '<option value="42">42</option>' +
+                        '<option value="43">43</option>' +
+                        '<option value="44">44</option>' +
+                        '<option value="45">45</option>' +
+                        '<option value="46">46</option>'
+                    )
+                }
+                if($category === "T-shirts"){
+                    $sizes.append(
+                        '<option value="XS">XS</option>' +
+                        '<option value="S">S</option>' +
+                        '<option value="M">M</option>' +
+                        '<option value="L">L</option>' +
+                        '<option value="XL">XL</option>'
+                    )
+                }
+
+            });
+            const addTagFormDeleteLink = (item) => {
+                const removeFormButton = document.createElement('button');
+                removeFormButton.innerText = 'Delete this word';
+
+                item.append(removeFormButton);
+
+                removeFormButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    item.remove();
+                });
+            }
+            const addFormToCollection = (e) => {
+                const collectionHolder = document.querySelector('.' + e.currentTarget.dataset.collectionHolderClass);
+                const item = document.createElement('li');
+                item.innerHTML = collectionHolder
+                    .dataset
+                    .prototype
+                    .replace(
+                        /__name__/g,
+                        collectionHolder.dataset.index
+                    );
+                collectionHolder.appendChild(item);
+                collectionHolder.dataset.index++;
+                addTagFormDeleteLink(item);
+            };
+
+            document
+                .querySelectorAll('.add_item_link')
+                .forEach(btn => {
+                    btn.addEventListener("click", addFormToCollection)
+                })
+                .querySelectorAll('ul.keyWords li')
+                        .forEach((keyWord) => {
+                            addTagFormDeleteLink(keyWord)
+                        })
+        })
+    </script>
+
 {% endblock %}
+

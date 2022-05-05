@@ -6,11 +6,30 @@
     <h1>Product index</h1>
 
     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-        <a href="{{ path('app_logout') }}">Logout</a>
+        <a class="btn btn-link" href="{{ path('app_logout') }}">Logout</a>
     {% else %}
-        <a href="{{ path('login') }}">Login</a>
+        <a class="btn btn-link" href="{{ path('login') }}">Login</a>
     {% endif %}
 
+    <h2>Change categories</h2>
+
+    <form id="filter" action="">
+        <label id="none" for="none">None</label>
+        <input type="radio" name="filter" value="none" checked>
+        <label id="shoes" for="shoes">Chaussures</label>
+        <input type="radio" name="filter" value="Chaussures">
+        <label id="tshirts" for="tshirts">T-shirts</label>
+        <input type="radio" name="filter" value="T-shirts">
+        <button type="submit">Trier</button>
+    </form>
+    <br><br>
+
+    <form action="" id="filterSize">
+    </form>
+    <br><br>
+    <form action="" id="research">
+    </form>
+    <br><br>
     <table class="table">
         <thead>
             <tr>
@@ -18,25 +37,18 @@
                 <th>Name</th>
                 <th>Description</th>
                 <th>Size</th>
-                <th>Category</th>
-                <th>KeyWords</th>
                 <th>actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="body">
         {% for product in products %}
             <tr>
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
                 <td>{{ product.description }}</td>
                 <td>{{ product.size }}</td>
-                <td>{{ product.category.name }}</td>
                 <td>
-                    {% for keyWord in product.keyWords %}
-                        <span>{{ keyWord }}</span>
-                    {% endfor %}</td>
-                <td>
-                    <a href="{{ path('app_product_show', {'id': product.id}) }}">show</a>
+                    <a class="btn btn-primary" href="{{ path('app_product_show', {'id': product.id}) }}">show</a>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                         <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
                     {% endif %}
@@ -46,11 +58,152 @@
             <tr>
                 <td colspan="6">no records found</td>
             </tr>
+
         {% endfor %}
         </tbody>
     </table>
 
+    <br><br>
     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
         <a href="{{ path('app_product_new') }}">Create new</a>
     {% endif %}
+
+
+    <script>
+        $( document ).ready(function() {
+            $(document).on('submit', '#filter', function (e) {
+                e.preventDefault()
+                $filterOn = $('input[name="filter"]:checked').val()
+                if($filterOn === 'none'){
+                    document.location.reload()
+                }
+                $this = $(this);
+                $.ajax({
+                    type: 'GET',
+                    url: '../api/categories',
+                    dataType: 'JSON',
+                    data: {},
+                    success: function(categories) {
+                        for ($i = 0; $i < categories.length; $i++){
+                            if($filterOn === categories[$i].name){
+                                $products= []
+                                $("#filterSize").empty()
+                                $("#research").empty()
+                                for($k = 0; $k < categories[$i].products.length; $k++){
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: categories[$i].products[$k],
+                                        dataType: 'JSON',
+                                        data: {},
+                                        success: function(product) {
+                                            $products.push(product)
+                                            $("#body").empty()
+
+                                            for($l = 0; $l < $products.length; $l++){
+                                                $("#body").append(
+                                                    '<tr>' +
+                                                        '<td>' + $products[$l].id + '</td>' +
+                                                        '<td>' + $products[$l].name + '</td>' +
+                                                        '<td>' + $products[$l].description + '</td>' +
+                                                        '<td>' + $products[$l].size + '</td>' +
+                                                        '<td>' +
+                                                            '<a href=' + $products[$l].id + '>show</a>' +
+                                                        '</td>' +
+                                                    '</tr>'
+                                                )
+                                            }
+                                            localStorage.setItem('products', JSON.stringify($products));
+
+                                        }
+                                    })
+                                }
+                                if($filterOn === 'T-shirts'){
+                                    $("#filterSize").append(
+                                        '<label for="filterSize">Choose a size :</label>' +
+                                        '<select name="filterSize" id="filterSize">' +
+                                        '       <option value="XS">XS</option>' +
+                                        '       <option value="S">S</option>' +
+                                        '       <option value="M">M</option>' +
+                                        '       <option value="L">L</option>' +
+                                        '       <option value="XL">XL</option>' +
+                                        '   </select>' +
+                                        '<button type="submit">Trier</button>'
+                                    )
+                                } else if($filterOn === 'Chaussures'){
+                                    $("#filterSize").append(
+                                        '<label for="filterSize">Choose a size :</label>' +
+                                        '<select name="filterSize" id="filterSize">' +
+                                        '       <option value="38">38</option>' +
+                                        '       <option value="39">39</option>' +
+                                        '       <option value="40">40</option>' +
+                                        '       <option value="41">41</option>' +
+                                        '       <option value="42">42</option>' +
+                                        '       <option value="43">43</option>' +
+                                        '       <option value="44">44</option>' +
+                                        '       <option value="45">45</option>' +
+                                        '       <option value="46">46</option>' +
+                                        '   </select>' +
+                                        '<button type="submit">Trier</button>'
+                                    )
+                                }
+                                $("#research").append(
+                                    '<label for="research">Search</label>' +
+                                    '<input type="text" name="research"/>' +
+                                    '<button type="submit">Search</button>'
+                                )
+                            }
+                        }
+                    }
+                });
+            });
+            $(document).on('submit', '#filterSize', function(e){
+                e.preventDefault()
+                $filterOn = $('#filterSize option:selected').val()
+
+                $("#body").empty()
+                $products = JSON.parse(localStorage.getItem('products'))
+
+                for($i = 0; $i < $products.length; $i++){
+                    if($products[$i].size === $filterOn){
+                        $("#body").append(
+                            '<tr>' +
+                            '<td>' + $products[$i].id + '</td>' +
+                            '<td>' + $products[$i].name + '</td>' +
+                            '<td>' + $products[$i].description + '</td>' +
+                            '<td>' + $products[$i].size + '</td>' +
+                            '<td>' +
+                            '<a href=' + $products[$i].id + '>show</a>' +
+                            '</td>' +
+                            '</tr>'
+                        )
+                    }
+                }
+            });
+            $(document).on('submit', '#research', function(e){
+                e.preventDefault()
+                $filterOn = $('#research input').val()
+
+                $("#body").empty()
+                $products = JSON.parse(localStorage.getItem('products'))
+                for($i = 0; $i < $products.length; $i++){
+                    for($k = 0; $k < $products[$i].keyWords.length; $k++){
+                        if($products[$i].keyWords[$k] === $filterOn){
+                            $("#body").append(
+                                '<tr>' +
+                                '<td>' + $products[$i].id + '</td>' +
+                                '<td>' + $products[$i].name + '</td>' +
+                                '<td>' + $products[$i].description + '</td>' +
+                                '<td>' + $products[$i].size + '</td>' +
+                                '<td>' +
+                                '<a href=' + $products[$i].id + '>show</a>' +
+                                '</td>' +
+                                '</tr>'
+                            )
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}
+
