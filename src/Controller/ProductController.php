@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Category;
 use App\Entity\Product;
 use App\Form\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,6 +23,7 @@ class ProductController extends AbstractController
 
         return $this->render('product/index.html.twig', [
             'products' => $products,
+            'sizes' => []
         ]);
     }
 
@@ -42,6 +44,41 @@ class ProductController extends AbstractController
         return $this->renderForm('product/new.html.twig', [
             'product' => $product,
             'form' => $form,
+        ]);
+    }
+
+    #[Route('/search', name: 'app_product_research', methods: ['GET'])]
+    public function research(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $research = sprintf($request->query->get('research'));
+        $products = [];
+
+        $category = $entityManager
+            ->getRepository(Category::class)
+            ->findOneBy(['name' => $research]);
+
+        if(null !== $category){
+            $productsInCategory = $category->getProducts();
+            foreach($productsInCategory as $product){
+                array_push($products, $product);
+            }
+        }
+
+        $allProducts = $entityManager
+            ->getRepository(Product::class)
+            ->findAll();
+
+        foreach($allProducts as $product){
+            foreach($product->keyWords as $keyWord){
+                if($keyWord === $research && !in_array($product, $products)){
+                    array_push($products, $product);
+                }
+            }
+        }
+
+        return $this->render('product/index.html.twig', [
+            'products' => $products,
+            'sizes' => []
         ]);
     }
 

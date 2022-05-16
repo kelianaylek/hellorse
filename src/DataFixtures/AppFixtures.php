@@ -25,16 +25,16 @@ class AppFixtures extends Fixture
         $manager->persist($user);
 
         $tShirtCategory = new Category();
-        $tShirtCategory->setName('T-shirts');
+        $tShirtCategory->setName('t-shirts');
 
         $shoeCategory = new Category();
-        $shoeCategory->setName('Chaussures');
+        $shoeCategory->setName('chaussures');
 
         for ($i = 0; $i < 10; $i++) {
             $product = new Product();
             $product->setName('product '.$i);
             $product->setDescription('product desc '.$i);
-            $product->setKeyWords(['wordProduct' .$i ]);
+            $product->setKeyWords(['wordProduct' .$i, 'test']);
 
             if((random_int(0,1)) === 0){
                 $tShirtCategory->addProduct($product);
